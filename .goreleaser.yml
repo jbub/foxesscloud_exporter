@@ -1,0 +1,73 @@
+version: 2
+project_name: foxesscloud_exporter
+release:
+  github:
+    owner: jbub
+    name: foxesscloud_exporter
+builds:
+  - main: main.go
+    binary: foxesscloud_exporter
+    ldflags: |
+      -s
+      -w
+      -X github.com/prometheus/common/version.Version={{ .Version }}
+      -X github.com/prometheus/common/version.Revision={{ .Commit }}
+      -X github.com/prometheus/common/version.BuildDate={{ .Date }}
+      -extldflags '-static'
+    flags: -tags netgo
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm
+      - arm64
+      - 386
+archives:
+  - id: release
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: "{{ .Binary }}_{{.Version}}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{.Arm }}{{ end }}"
+    files:
+      - LICENSE
+      - README.md
+snapshot:
+  version_template: "{{ .Commit }}"
+dockers:
+  - image_templates:
+      - "jbub/foxesscloud_exporter:{{ .Tag }}"
+      - "jbub/foxesscloud_exporter:latest"
+    dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--platform=linux/amd64"
+  - image_templates:
+      - "jbub/foxesscloud_exporter:{{ .Tag }}-arm64"
+      - "jbub/foxesscloud_exporter:latest-arm64"
+    dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--platform=linux/arm64"
+    goarch: arm64
+docker_manifests:
+  - name_template: 'jbub/foxesscloud_exporter:{{ .Tag }}'
+    image_templates:
+      - 'jbub/foxesscloud_exporter:{{ .Tag }}'
+      - 'jbub/foxesscloud_exporter:{{ .Tag }}-arm64'
