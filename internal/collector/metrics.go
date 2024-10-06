@@ -51,6 +51,12 @@ func buildMetrics() []metric {
 			eval:    func(data metricData) float64 { return data.LoadPower },
 		},
 		{
+			name:    "feed_in_power_kw",
+			help:    "Feed-in power",
+			valType: prometheus.GaugeValue,
+			eval:    func(data metricData) float64 { return data.FeedInPower },
+		},
+		{
 			name:    "output_power_kw",
 			help:    "Output power",
 			valType: prometheus.GaugeValue,
