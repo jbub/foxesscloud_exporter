@@ -13,6 +13,7 @@ import (
 	"github.com/prometheus/common/version"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var Server = &cli.Command{
@@ -72,5 +73,7 @@ func newLogger(level string) (*zap.Logger, error) {
 	}
 	logCfg := zap.NewProductionConfig()
 	logCfg.Level = lvl
+	logCfg.Sampling = nil
+	logCfg.EncoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
 	return logCfg.Build()
 }
