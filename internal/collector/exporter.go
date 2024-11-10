@@ -137,9 +137,10 @@ func (e *Exporter) buildLabels(inverterSN string) prometheus.Labels {
 func (e *Exporter) fetchInvertersInitial(ctx context.Context) ([]metricData, error) {
 	data, err := e.fetchInverters(ctx)
 	if err != nil {
-		// in case initial fetch fails on timeout, we want the program to continue
+		// in case initial fetch fails on context error (timeout, cancel), we want the program to continue
 		// the next tick will retry the fetch instead of exiting the program
 		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+			e.log.Error("initial inverter fetch context error", zap.Error(err))
 			return data, nil
 		}
 
@@ -147,7 +148,7 @@ func (e *Exporter) fetchInvertersInitial(ctx context.Context) ([]metricData, err
 		// the next tick will retry the fetch instead of exiting the program
 		var errRate *foxesscloud.RateLimitExceededError
 		if errors.As(err, &errRate) {
-			e.log.Error("rate limit exceeded", zap.Error(err))
+			e.log.Error("initial inverter fetch rate limit exceeded", zap.Error(err))
 			return data, nil
 		}
 		return nil, err
